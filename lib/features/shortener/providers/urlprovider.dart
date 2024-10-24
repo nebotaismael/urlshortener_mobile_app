@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:urlshortener/utils/snackbar.dart';
 
 import '../models/shortener.dart';
@@ -21,22 +21,26 @@ class UrlNotifier extends StateNotifier<UrlState> {
 
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://www.shrtlnk.dev/api/v1',
+      baseUrl: 'https://api-ssl.bitly.com/v4',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
+      headers: {
+        'Authorization': 'Bearer ${dotenv.env['API_TOKEN']}', // Replace with your Bitly access token
+      },
     ),
   );
 
   Future<void> shortenUrl(String originalUrl) async {
+    print(dotenv.env['API_TOKEN']);
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _dio.post(
         '/shorten',
-        data: {'url': originalUrl},
+        data: json.encode({'long_url': originalUrl}),
       );
 
       if (response.statusCode == 200) {
-        final shortenedUrl = response.data['shortenedUrl'];
+        final shortenedUrl = response.data['link'];
         final newUrl = Url(original: originalUrl, shortened: shortenedUrl);
         state = state.copyWith(
           urls: [...state.urls, newUrl],
@@ -66,7 +70,7 @@ class UrlNotifier extends StateNotifier<UrlState> {
     if (urlsString != null) {
       final List<dynamic> jsonList = json.decode(urlsString);
       final List<Url> urls =
-          jsonList.map((json) => Url.fromJson(json)).toList();
+      jsonList.map((json) => Url.fromJson(json)).toList();
       state = state.copyWith(urls: urls);
     }
   }
@@ -74,7 +78,7 @@ class UrlNotifier extends StateNotifier<UrlState> {
   Future<void> _saveUrls(List<Url> urls) async {
     final prefs = await SharedPreferences.getInstance();
     final String urlsString =
-        json.encode(urls.map((url) => url.toJson()).toList());
+    json.encode(urls.map((url) => url.toJson()).toList());
     await prefs.setString('urls', urlsString);
   }
 

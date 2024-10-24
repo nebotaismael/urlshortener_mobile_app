@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 void showSnackbar(String message) {
   Get.snackbar(
-    'Error',
+    'Alert',
     message,
     snackPosition: SnackPosition.BOTTOM,
     borderRadius: 10,
