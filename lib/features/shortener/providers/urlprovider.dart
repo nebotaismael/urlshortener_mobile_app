@@ -31,7 +31,7 @@ class UrlNotifier extends StateNotifier<UrlState> {
   );
 
   Future<void> shortenUrl(String originalUrl) async {
-    print(dotenv.env['API_TOKEN']);
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _dio.post(
@@ -39,7 +39,7 @@ class UrlNotifier extends StateNotifier<UrlState> {
         data: json.encode({'long_url': originalUrl}),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode==201) {
         final shortenedUrl = response.data['link'];
         final newUrl = Url(original: originalUrl, shortened: shortenedUrl);
         state = state.copyWith(
@@ -48,6 +48,7 @@ class UrlNotifier extends StateNotifier<UrlState> {
         );
         _saveUrls(state.urls);
       } else {
+
         _handleError('Failed to shorten URL: ${response.statusMessage}');
       }
     } on DioException catch (e) {
