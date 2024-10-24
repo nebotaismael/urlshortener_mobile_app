@@ -33,7 +33,7 @@ class CustomBottomSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text('Sign Up'),
+                child: const Text('Sign Up', style: TextStyle(color: Colors.white),),
               ),
             ),
           ],
